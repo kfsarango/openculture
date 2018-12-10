@@ -387,35 +387,138 @@ def scrapy_languajes(request):
 		try:
 			cat = p.find('span').find('strong').get_text()
 			lstCategoriesLanguajes.append(cat)
+			print cat
 		except Exception as e:
 			print e
 
-	#encontrando los listados de los cursos
-	dom_ULs = div_main.find_all('ul')
-	cont = 1
-	for ul in dom_ULs:
-		dom_LIs = ul.find_all('li')
+	#encontrando los listados de los cursos de lenguajes
+	#no se puede saber la categoria a la que pertenecen los cursos
+	lstULs = soup.select('.entry > ul')
+	print len(lstULs)
+	for ul in lstULs:
+		dom_LIs = ul.select('> li')
+		print len(dom_LIs)
 		for li in dom_LIs:
 			try:
-				dom_UL_on_LI = li.find_all('ul')
-				if len(dom_UL_on_LI) >= 1:
-					print cont
-					cont = cont + 1
-					#Entonces vamos a trabajar con este LI
+				try:
 					titleCourseLan = li.find('strong').get_text()
-					print '\t', titleCourseLan 
-					dom_A = li.find_all('a')
-					for a in dom_A:
-						nammUrlLa =a.get_text()
-						print '\t\t',nammUrlLa
-						
+				except Exception as e:
+					titleCourseLan = li.find('b').get_text()
+				
+				
+				ulonli = li.find('ul')
+				domLIS = ulonli.find_all('li') 
+				for lis in domLIS:
+					descriptionLanguageLesson = lis.get_text()
 
+				newLanguage = Languages()
+				newLanguage.title = titleCourseLan
+				newLanguage.description = descriptionLanguageLesson
+				newLanguage.save()
+
+				dom_A = li.find_all('a')
+				for a in dom_A:
+					nameUrlLa = a.get_text()
+					enlaceA = a.get('href')
+
+					newLinkLan = Linklanguages()
+					newLinkLan.namelink = nameUrlLa
+					newLinkLan.url = enlaceA
+					newLinkLan.languages = newLanguage
+					newLinkLan.save()
+
+				print 'Saved ', newLanguage
+
+
+				
 			except Exception as e:
-				#No es el primer UL, no nos sirve esta repitiendo el contenido
-				print ''
+				print 'FIRST'
+				print e
+		
 
-	print 'len lstCategorias: ', len(lstCategoriesLanguajes)
-	print 'len Uls: ', len(dom_ULs)
+
+		print'\n\n'
 	
 
 	return HttpResponse('END .. ')
+
+
+def scrapy_textbooks(request):
+	urlWeb = domain + 'free_textbooks'
+	web = requests.get(urlWeb)
+	content = web.content
+
+	soup = BS(content,'html.parser')
+
+	div_main = soup.find('div',{'class':'curatedcategory'})
+	lstULs = div_main.find_all('ul')
+	print len(lstULs)
+	for ul in lstULs:
+		domLIS = ul.find_all('li')
+		for li in domLIS:
+			try:
+				tagA = li.find('a')
+				nameTB = tagA.get_text()
+				urlLink = tagA.get('href')
+				descriptionTB = li.get_text()[len(nameTB) + 1:]
+
+				newTextBook = Textbooks()
+				newTextBook.title = nameTB
+				newTextBook.url = urlLink
+				newTextBook.description = descriptionTB
+				newTextBook.save()
+
+				print newTextBook.title , ' Saved'
+				
+
+			except Exception as e:
+				print e
+
+
+
+	return HttpResponse('Scrapy End')
+
+
+def scrapy_ebooks(request):
+	urlWeb = domain + 'free_ebooks'
+	web = requests.get(urlWeb)
+	content = web.content
+
+	soup = BS(content,'html.parser')
+
+	div_main = soup.find('div',{'class':'entry'})
+	lstULs = div_main.select('> ul')
+
+	for ul in lstULs:
+		for li in ul.select('> li'):
+			try:
+				ulonli = li.find('ul')
+				domLiEnlaces = ulonli.find('li')
+				sizeEnlances = len(domLiEnlaces.get_text())
+				textLI = li.get_text().replace('\n',' ')
+				limit = len(textLI) - sizeEnlances
+				nameEbook = textLI[:limit - 2]
+
+				
+				newEbook = Ebooks()
+				newEbook.title = nameEbook
+				newEbook.save()
+
+				enlaces = domLiEnlaces.find_all('a')
+				for a in enlaces:
+					nameLink = a.get_text()
+					urlEnlace = a.get('href')
+
+					newLinkEbook = Linkebooks()
+					newLinkEbook.namelink = nameLink
+					newLinkEbook.url = urlEnlace
+					newLinkEbook.ebooks = newEbook
+					newLinkEbook.save()
+
+				print 'Saved: ', newEbook.title
+
+			except Exception as e:
+				print e
+			
+
+	return HttpResponse('OK Enn Ebooks')

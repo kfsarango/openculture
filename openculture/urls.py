@@ -18,6 +18,7 @@ from django.contrib import admin
 
 urlpatterns = [
 	url(r'', include('app.urls')),
+	url(r'', include('ted.urls')),
     url(r'^admin/', admin.site.urls),
 
 ]

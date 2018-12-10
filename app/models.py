@@ -92,3 +92,48 @@ class Movies(models.Model):
         managed = False
         db_table = 'movies'
 
+class Languages(models.Model):
+    title = models.CharField(max_length=145, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'languages'
+
+
+class Linklanguages(models.Model):
+    namelink = models.CharField(max_length=125, blank=True, null=True)
+    url = models.TextField(blank=True, null=True)
+    languages = models.ForeignKey(Languages, models.DO_NOTHING)
+
+    class Meta:
+        managed = False
+        db_table = 'linklanguages'
+
+
+class Ebooks(models.Model):
+    title = models.CharField(max_length=45, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'ebooks'
+
+
+class Linkebooks(models.Model):
+    namelink = models.CharField(max_length=245, blank=True, null=True)
+    url = models.CharField(max_length=45, blank=True, null=True)
+    ebooks = models.ForeignKey(Ebooks, models.DO_NOTHING)
+
+    class Meta:
+        managed = False
+        db_table = 'linkebooks'
+
+
+class Textbooks(models.Model):
+    title = models.CharField(max_length=245, blank=True, null=True)
+    url = models.TextField(blank=True, null=True)
+    description = models.CharField(max_length=445, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'textbooks'
